@@ -16,7 +16,7 @@ const utils = require('ethereum-cryptography/utils');
 /**
  * 1. Public key-private key pair generation
  * 2. A signature is generated from the public key using the private key
- * 3. From the signature I recover the public key and address to give to the front end 
+ * 3. From the signature I recover the public key and the wallet address to give to the front end 
  */
 
 /**
