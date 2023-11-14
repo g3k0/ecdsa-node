@@ -1,6 +1,7 @@
 /**
  * author: Christian Palazzo
  * email: palazzochristian@yahoo.it
+ * date: 2023-11-14
  * 
  * This file contains the asymmetric encryption utilities that need to be run
  * outside of the scope of the front end and the back end applications.
@@ -81,7 +82,8 @@ const main = function() {
         response.data.signature = signatureString;
         return console.log(JSON.stringify(response));
     } catch (e) {
-        return console.log(`There was an error running the script: ${response.error = e.message}`);
+        response.error = `There was an error running the script: ${e.message}`;
+        return console.log(JSON.stringify(response));
     }
     
 }
