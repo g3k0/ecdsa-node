@@ -35,7 +35,7 @@ const utils = require('ethereum-cryptography/utils');
  * The back end will:
  *  - checks the validity of the signature
  *  - extracts the address from the signature
- *  - checks the wallet if the balance is enough for the transaction
+ *  - checks if the balance of the wallet is enough for the transaction
  *  - performs the transactions / returns the appropriate error
  */
 
