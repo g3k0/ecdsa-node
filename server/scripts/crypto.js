@@ -40,7 +40,7 @@ const utils = require('ethereum-cryptography/utils');
  */
 
 /**
- * @return {object} - the result json containing all the needed data
+ * @return {string} - it containts all the needed data or the error message in case of error
  */
 const main = function() {
 
