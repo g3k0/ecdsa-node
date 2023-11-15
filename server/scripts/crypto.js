@@ -80,10 +80,15 @@ const main = function() {
         response.data.publicKey = publicKeyString;
         response.data.address = addressString;
         response.data.signature = signatureString;
-        return console.log(JSON.stringify(response));
+        
+        console.log(JSON.stringify(response));
+
+        return response
     } catch (e) {
         response.error = `There was an error running the script: ${e.message}`;
-        return console.log(JSON.stringify(response));
+        console.log(JSON.stringify(response));
+
+        return response
     }
     
 }
