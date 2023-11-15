@@ -1,9 +1,15 @@
 import { useState } from "react";
 import server from "./server";
 
-function Transfer({ address, setBalance }) {
+
+// In this component I added the signature field and removed the address data
+// because we are sending the signature to the back end so the address string
+// is no longer needed. Back end will retrieve the wallet adress from the signature
+
+function Transfer({ setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [signature, setSignature] = useState("")
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -14,8 +20,8 @@ function Transfer({ address, setBalance }) {
       const {
         data: { balance },
       } = await server.post(`send`, {
-        sender: address,
         amount: parseInt(sendAmount),
+        signature,
         recipient,
       });
       setBalance(balance);
@@ -43,6 +49,15 @@ function Transfer({ address, setBalance }) {
           placeholder="Type an address, for example: 0x2"
           value={recipient}
           onChange={setValue(setRecipient)}
+        ></input>
+      </label>
+
+      <label>
+        Signature
+        <input
+          placeholder="Please sign the transaction request"
+          value={signature}
+          onChange={setValue(setSignature)}
         ></input>
       </label>
 
