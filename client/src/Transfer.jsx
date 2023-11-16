@@ -10,6 +10,7 @@ function Transfer({ setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [signature, setSignature] = useState("")
+  const [publicKeyHash, setPublicKeyHash] = useState("")
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -21,8 +22,9 @@ function Transfer({ setBalance }) {
         data: { balance },
       } = await server.post(`send`, {
         amount: parseInt(sendAmount),
-        signature,
         recipient,
+        publicKeyHash,
+        signature
       });
       setBalance(balance);
     } catch (ex) {
@@ -49,6 +51,15 @@ function Transfer({ setBalance }) {
           placeholder="Type an address, for example: 0x2"
           value={recipient}
           onChange={setValue(setRecipient)}
+        ></input>
+      </label>
+
+      <label>
+        Public Key Hash
+        <input
+          placeholder="Please insert the hash of your public key"
+          value={publicKeyHash}
+          onChange={setValue(setPublicKeyHash)}
         ></input>
       </label>
 

@@ -26,7 +26,7 @@ const utils = require('ethereum-cryptography/utils');
  *     "success": <boolean>
  *     "data": {
  *        privateKey: <string>
- *        publicKey: <string>
+ *        publicKeyHash: <string> // the user passes this to the back end when he/she does a transaction
  *        signature: <string>  // the user passes this to the back end when he/she does a transaction
  *        address: <string>    // this is hardcoded in the front end
  *      }
@@ -48,9 +48,10 @@ const main = function() {
         result: false,
         data: {
             privateKey: '',
-            publicKey: '',
+            publicKeyHash: '',
             signature: '',
-            address: ''
+            address: '',
+            recoveryId: ''
         }
     }
 
@@ -61,7 +62,6 @@ const main = function() {
 
         // I obtain the public key from the previous random private key
         const publicKey = secp256k1.getPublicKey(privateKey)
-        const publicKeyString = utils.toHex(publicKey).toString();
 
         // I obtain the address from the public key, taking the last 20 bytes
         // the address is set in the React front end component
@@ -69,19 +69,24 @@ const main = function() {
         const addressString = utils.toHex(last20ByteUint8Array).toString();
 
         // I create the signature starting from the public key 
-        // This signature is needed by the user to ask for a transaction
+        // This signature is needed by the user to ask for a transaction, togheter with the public key hash
         const publicKeyHash = keccak256(publicKey);
+        const publicKeyHashString = utils.toHex(publicKeyHash).toString()
+
         const signature = secp256k1.sign(publicKeyHash, privateKey);
-        const signatureString = signature.toCompactHex().toString();
-
-
+        const recoveryId = signature.recovery
+        const signatureString = signature.toCompactHex();
+        
         response.result = true;
         response.data.privateKey = privateKeyString;
-        response.data.publicKey = publicKeyString;
+        response.data.publicKeyHash = publicKeyHashString;
         response.data.address = addressString;
         response.data.signature = signatureString;
-        
-        console.log(JSON.stringify(response));
+        // unfortunately I must pass the recovery id also, since is not serialized
+        // see https://github.com/paulmillr/noble-curves
+        response.data.recoveryId = recoveryId
+
+        console.log(JSON.stringify(response))
 
         return response
     } catch (e) {
@@ -99,22 +104,27 @@ module.exports.main = main()
  * set of data created for the application:
  * 
  * {
- *  "privateKey":"54f583565fdc40811fd893407fb6038bf6a3ce8898db5b5b212cb61c5e26c729",
- *  "publicKey":"030d0d7775081bcf56528de7717d79bfd87d95f09b2f0d029068538876d27d3bb8",
- *  "signature":"4cd838000bcbe50e702a24480bc1c8ffc4cb89488845062287c6c125f34119fc4fc979f442220139fdea56c95c2abeb12465223413db5581d7561ada70450e29",
- *  "address":"7d79bfd87d95f09b2f0d029068538876d27d3bb8"
- * },
+ *  "privateKey":"b94ce5504ccb565908c766d969119557a347089b1bc2b75fe9feaac44cc7a446",
+ *  "publicKeyHash":"a5ff311973c06e539b5323a92d2a93b90b5057c3d8ef1be2c24fb9ca72b0352f",
+ *  "signature":"affe0224765d6b694635409b854129cbba79b5422ecad67442086f35074a7b967e3b806f473970be1f8c606b11e61b0de8406ebbcbc913e3e568056cebaedd6c",
+ *  "address":"7e5df95bc49d6b8d67de022453558ba593d5dfa4",
+ *  "recoveryId":1
+ * }
+ * 
  * {
- *  "privateKey":"12ca50c4e87902ae40741090401d22db9523aadfa9d09896dcde99af63cb02e9",
- *  "publicKey":"024b8bedf477301819c523ec734ee3d47d007020ad0a5ca702b9809ab23c9362d0",
- *  "signature":"8880e5feb6849ff0f43d3ac3524a9be247540eaf402541f257d2a554ad2fb5ee014571c01c6b7212aa16143aeec4f05efda9f00f71b6e88d728e31f9d4b643ab",
- *  "address":"4ee3d47d007020ad0a5ca702b9809ab23c9362d0"
- * },
+ *  "privateKey":"18792766f89806c5f98b059a445065efa35f1d99fa26303e28b3bf7f9d7efc37",
+ *  "publicKeyHash":"3e03d7ebd29dd5ad76b9946601d6170b31a5c710f1b670551af8a6b8b22e2647",
+ *  "signature":"9979dcc918e0b712899bd3780db3c90145dbbeb2f4c213617edaecdbdb98866d3982f81836088749a64602e11fcc5afc35e1f644aa75628edb663ea9709343e5",
+ *  "address":"0f5574a60058d00ce484a7b19f9acc76a6e67452",
+ *  "recoveryId":1
+ * }
+ * 
  * {
- *  "privateKey":"546efc3fa58af783ea2a41210314f40f773a56367ef16fca84e9216d7a5a1c7d",
- *  "publicKey":"026fb47376f2ac2a28536d5f206a9b43a532798333e053f2257d8a8a5d1b3224f1",
- *  "signature":"cac4f372009efd1a102b30845094e3526a71b132f067d6d25f973abab92c6cbd3a8b25e6d1a9c7462ef321f5b6a8805393b9f3f027017e13005cb66c24fd2c3b",
- *  "address":"6a9b43a532798333e053f2257d8a8a5d1b3224f1"
+ *  "privateKey":"cc688329b2712eaa5dbaef19e08c7f1134cd281a0c86fba8039f2ac49dd26901",
+ *  "publicKeyHash":"b08d57826ea25bc2852d1fb52c1e703ad567d50ae58e37a298c0343dbc4d1177",
+ *  "signature":"6fe01fff851fc7f736e2723abd05a4ac9eefa1fa5d6a77daa87066a775a636ba09699e9cfcb7ec77fd4aae797a5dc70379f980c8ea42b4920f8475742cc65bbd",
+ *  "address":"0b76da09d0f20e7d83ab29003ec0925bf99d69b7",
+ *  "recoveryId":1
  * }
  */
 
