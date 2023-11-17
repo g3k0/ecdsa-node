@@ -59,43 +59,41 @@ app.post("/send", (req, res) => {
     res.status(400).send({ message: "The amount is missing or has an invalid format: please provide a valid number amount" });
   }
 
-  // ...then, let's check the signature and retrieve the sender public key...
+
   let publicKey;
+  let SenderAddress;
 
   try {
+    // ...then, let's check the signature and retrieve the sender public key...
     publicKey = (secp256k1.Signature.fromCompact(signature)).addRecoveryBit(1).recoverPublicKey(publicKeyHash).toHex();
+
+    // ...next, let's to retrieve the address...
+    const senderAddress = utils.toHex(utils.hexToBytes(publicKey).slice(-20)).toString();
+
+    // ...and check that the sender is not asking a transaction to his/her own address...
+    if (recipient === senderAddress) {
+      throw new Error('Sender and receiver addresses are the same. Transaction rejected');
+    }
+
+    // ..also check that the recipient address exists...
+    if (!balances[recipient]) {
+      throw new Error('Recipiend address does not exists. Transaction rejected');
+    }
+
+    // ...now I check that the funds are enough for the transaction...
+    if (balances[senderAddress] < amount) {
+      throw new Error('Funds are not enough. Transaction rejected');
+    }
+
+     // ...and finally I complete the transaction.
+     balances[senderAddress] -= amount;
+     balances[recipient] += amount;
+     res.send({ balance: balances[senderAddress] });
+
   } catch (e) {
     console.error(e.message)
-    res.status(400).send({ message: "The signature seems to be invalid. Trasaction rejected" });
+    res.status(400).send({ message: e.message || "An error occurred. Trasaction rejected" });
   }
-
-  // ...next, let's to retrieve the address...
-  let address;
-
-  try {
-   
-
-  } catch(e) {
-    console.error(e.message)
-    res.status(500).send({ message: "Internal server error. Trasaction rejected" });
-  }
-  
-  // ...and check that the sender is not asking a transaction to his/her own address...
-
-  // ...now I check that the funds are enough for the transaction...
-
-  // ...and finally I complete the transaction.
-
-  /*setInitialBalance(sender);
-  setInitialBalance(recipient);
-
-  if (balances[sender] < amount) {
-    res.status(400).send({ message: "Not enough funds!" });
-  } else {
-    balances[sender] -= amount;
-    balances[recipient] += amount;
-    res.send({ balance: balances[sender] });
-  }*/
 });
 
 app.listen(port, () => {
